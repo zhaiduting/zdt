@@ -5,6 +5,7 @@
 /*
 !.gitignore
 !.gitmodules
+!.vimrc
 
 # 仅追踪 Library 文件夹内的 Services 文件夹
 !/Library/
