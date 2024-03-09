@@ -6,6 +6,7 @@
 !.gitignore
 !.gitmodules
 !.vimrc
+!.zshrc
 
 # 仅追踪 Library 文件夹内的 Services 文件夹
 !/Library/
