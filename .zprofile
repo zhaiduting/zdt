@@ -5,6 +5,7 @@ switch_brew_mirror() {
             export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/brew.git"
             export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/homebrew-core.git"
             export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.aliyun.com/homebrew/homebrew-bottles"
+            sed -i '' 's/^BREW_MIRROR=.*/BREW_MIRROR="aliyun"/' ~/.zprofile
             echo "Switched to Aliyun mirror."
             ;;
         2 | tsinghua)
@@ -12,6 +13,7 @@ switch_brew_mirror() {
             export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
             export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git"
             export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
+            sed -i '' 's/^BREW_MIRROR=.*/BREW_MIRROR="tsinghua"/' ~/.zprofile
             echo "Switched to Tsinghua mirror."
             ;;
         *)
@@ -21,4 +23,6 @@ switch_brew_mirror() {
     esac
 }
 
-switch_brew_mirror "aliyun" > /dev/null
+BREW_MIRROR="aliyun"
+switch_brew_mirror "$BREW_MIRROR" > /dev/null
+
