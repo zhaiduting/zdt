@@ -1,4 +1,4 @@
-![](https://cdn.learnku.com/uploads/images/202403/27/24833/n0B8VoBb6I.jpg!large)
+![](https://cdn.learnku.com/uploads/images/202403/27/24833/n0B8VoBb6I.jpg)
 ## 命令说明
 Mac终端敲入以下命令即可永久切换镜像
 切换到阿里云：switch_brew_mirror 1
@@ -60,6 +60,5 @@ https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git
 
 ## 镜像资料
 阿里镜像 https://developer.aliyun.com/mirror/homebrew
-清华镜像 https://mirrors.tuna.tsinghua.edu.cn/help/homebrew/
+清华镜像 https://mirrors.tuna.tsinghua.edu.cn/help/homebrew
 Homebrew https://brew.sh
-/
