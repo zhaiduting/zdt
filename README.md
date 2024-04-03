@@ -28,7 +28,7 @@ my %MIRROR_URLS    = (
 2、编辑 $HOME/.zprofile 文件，末尾添加以下3行代码即可  
 ``` shell  
 switch_brew_mirror() {  
-    eval "$(perl .switch_brew_mirror.pl "$1")"  
+    eval "$(perl ~/.switch_brew_mirror.pl "$1")"  
 }; switch_brew_mirror  
 ```  
   
