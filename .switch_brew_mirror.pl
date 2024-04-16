@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-my $CURRENT_MIRROR = "tsinghua";
+my $CURRENT_MIRROR = "ustc";
 my %MIRROR_URLS    = (
     aliyun => {
         HOMEBREW_INSTALL_FROM_API => 1,
@@ -26,6 +26,15 @@ my %MIRROR_URLS    = (
         HOMEBREW_CORE_GIT_REMOTE =>
           "https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git",
         HOMEBREW_PIP_INDEX_URL => "https://pypi.tuna.tsinghua.edu.cn/simple"
+    },
+    ustc => {
+        HOMEBREW_BREW_GIT_REMOTE => "https://mirrors.ustc.edu.cn/brew.git",
+        HOMEBREW_CORE_GIT_REMOTE =>
+          "https://mirrors.ustc.edu.cn/homebrew-core.git",
+        HOMEBREW_BOTTLE_DOMAIN =>
+          "https://mirrors.ustc.edu.cn/homebrew-bottles",
+        HOMEBREW_API_DOMAIN =>
+          "https://mirrors.ustc.edu.cn/homebrew-bottles/api"
     }
 );
 
