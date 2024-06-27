@@ -3,6 +3,7 @@ gradle.settingsEvaluated { settings ->
     settings.dependencyResolutionManagement.repositories.clear()
     settings.pluginManagement.repositories.clear()
 
+    // 配置插件管理的镜像仓库
     settings.pluginManagement.repositories {
         maven {
             url 'https://maven.aliyun.com/repository/google'
@@ -13,10 +14,16 @@ gradle.settingsEvaluated { settings ->
         maven {
             url 'https://maven.aliyun.com/repository/gradle-plugin'
         }
+        maven {
+            url 'https://maven.aliyun.com/repository/public'
+        }
+        // 加上 fallback 仓库，确保依赖项不会因为镜像问题而丢失
         google()
         mavenCentral()
         gradlePluginPortal()
     }
+
+    // 配置依赖管理的镜像仓库
     settings.dependencyResolutionManagement.repositories {
         maven {
             url 'https://maven.aliyun.com/repository/google'
@@ -27,6 +34,32 @@ gradle.settingsEvaluated { settings ->
         maven {
             url 'https://maven.aliyun.com/repository/gradle-plugin'
         }
+        maven {
+            url 'https://maven.aliyun.com/repository/public'
+        }
+        // 加上 fallback 仓库，确保依赖项不会因为镜像问题而丢失
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+// 为确保项目构建脚本也使用相同的镜像仓库，可以配置所有项目的构建脚本
+allprojects {
+    repositories {
+        maven {
+            url 'https://maven.aliyun.com/repository/google'
+        }
+        maven {
+            url 'https://maven.aliyun.com/repository/central'
+        }
+        maven {
+            url 'https://maven.aliyun.com/repository/gradle-plugin'
+        }
+        maven {
+            url 'https://maven.aliyun.com/repository/public'
+        }
+        // 加上 fallback 仓库，确保依赖项不会因为镜像问题而丢失
         google()
         mavenCentral()
         gradlePluginPortal()
