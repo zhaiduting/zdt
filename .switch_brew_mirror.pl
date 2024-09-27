@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-my $CURRENT_MIRROR = "ustc";
+my $CURRENT_MIRROR = "aliyun";
 my %MIRROR_URLS    = (
     aliyun => {
         HOMEBREW_INSTALL_FROM_API => 1,
