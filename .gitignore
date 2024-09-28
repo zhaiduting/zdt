@@ -3,6 +3,7 @@
 
 # 忽略所有文件或文件夹（明确指定需要追踪的除外）
 /*
+!.gitconfig
 !.gitignore
 !.gitmodules
 !.vimrc
