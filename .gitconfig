@@ -3,3 +3,5 @@
 	name = zhaiduting
 [init]
 	defaultBranch = main
+[push]
+	autoSetupRemote = true
