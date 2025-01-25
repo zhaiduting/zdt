@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-my $CURRENT_MIRROR = "0";
+my $CURRENT_MIRROR = "goproxy";
 my %MIRROR_URLS    = (
     golang => {
         GOPROXY => "https://proxy.golang.org,direct",
@@ -15,7 +15,7 @@ my %MIRROR_URLS    = (
     baidu => {
         GOPROXY => "https://goproxy.bj.bcebos.com/,direct",
     },
-    cdn => {
+    goproxy => {
         GOPROXY => "https://goproxy.io,direct",
         GOSUMDB =>
           "gosum.io+ce6e7565+AY5qEHUk/qmHc5btzW45JVoENfazw8LielDsaI+lEbq6"
