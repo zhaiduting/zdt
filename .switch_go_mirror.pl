@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-my $CURRENT_MIRROR = "goproxy";
+my $CURRENT_MIRROR = "qiniu";
 my %MIRROR_URLS    = (
     golang => {
         GOPROXY => "https://proxy.golang.org,direct",
@@ -11,9 +11,11 @@ my %MIRROR_URLS    = (
     },
     aliyun => {
         GOPROXY => "https://mirrors.aliyun.com/goproxy/,direct",
+        GOSUMDB => "sum.golang.google.cn"
     },
     baidu => {
         GOPROXY => "https://goproxy.bj.bcebos.com/,direct",
+        GOSUMDB => "sum.golang.google.cn"
     },
     goproxy => {
         GOPROXY => "https://goproxy.io,direct",
@@ -25,10 +27,14 @@ my %MIRROR_URLS    = (
         GOSUMDB => "sum.golang.google.cn"
     },
     qiniu => {
-        GOPROXY => "https://goproxy.cn,direct",
-        GOSUMDB => "goproxy.cn/sumdb/sum.golang.org"
+        GO111MODULE => "on",
+        GOPROXY     => "https://goproxy.cn,direct",
+        GOSUMDB     => "sum.golang.google.cn"
     },
-    gocenter => { GOPROXY => "https://gocenter.io,direct" },
+    gocenter => {
+        GOPROXY => "https://gocenter.io,direct",
+        GOSUMDB => "sum.golang.google.cn"
+    },
 );
 
 my $SCRIPT_FILE = $0;
