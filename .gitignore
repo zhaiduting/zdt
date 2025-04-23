@@ -21,3 +21,6 @@
 !/.gradle/
 /.gradle/*
 !/.gradle/init.gradle
+
+# 追踪所有自定义工具
+!/mytools/

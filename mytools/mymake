@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# 初始化变量
+makefile=""  # 最终使用的 Makefile（根据优先级确定）
+command=""   # 要执行的目标（如 test、build）
+args=()      # 目标的额外参数（如 -v）
+
+# 全局 fallback：脚本同目录下的 mymake.mk
+global_makefile="$0.mk"
+
+# 显示帮助信息
+show_help() {
+    echo "Usage: mymake [options] [target] [target_args...]"
+    echo "Options:"
+    echo "  -f FILE, --file FILE    Use FILE as the Makefile (highest priority)"
+    echo "  -h, --help              Show this help message"
+    echo ""
+    echo "Makefile优先级:"
+    echo "1. -f 指定的文件"
+    echo "2. 当前目录的 Makefile"
+    echo "3. 脚本同目录的 mymake.mk (fallback)"
+}
+
+# 解析命令行参数
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--file)
+            if [[ -z "$2" ]]; then
+                echo "Error: No Makefile specified after -f"
+                exit 1
+            fi
+            makefile="$2"  # 用户指定的 Makefile（最高优先级）
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -*)
+            echo "Error: Unknown option '$1'"
+            exit 1
+            ;;
+        *)
+            if [[ -z "$command" ]]; then
+                command="$1"  # 第一个非选项参数是目标（如 test）
+            else
+                args+=("$1")   # 其余参数存入数组（如 -v）
+            fi
+            shift
+            ;;
+    esac
+done
+
+# 检查目标是否存在
+target_exists() {
+    local mkfile="$1"
+    local target="$2"
+    if make -f "$mkfile" -n "$target" >/dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# 按优先级选择 Makefile
+if [[ -n "$makefile" ]]; then
+    # 1. 优先级最高：-f 指定的文件
+    if [[ ! -f "$makefile" ]]; then
+        echo "Error: Specified Makefile '$makefile' not found"
+        exit 1
+    fi
+elif [[ -f "Makefile" ]]; then
+    # 2. 优先级其次：当前目录的 Makefile
+    makefile="Makefile"
+elif [[ -f "$global_makefile" ]]; then
+    # 3. 优先级最低：脚本同目录的 mymake.mk
+    makefile="$global_makefile"
+else
+    echo "Error: No valid Makefile found (checked: -f, ./Makefile, $global_makefile)"
+    exit 1
+fi
+
+# 执行 make 命令
+if [[ -z "$command" ]]; then
+    echo "Error: No target specified"
+    exit 1
+elif target_exists "$makefile" "$command"; then
+    make -f "$makefile" "$command" "${args[@]}"
+else
+    echo "Error: Command '$command' not found in $makefile"
+    exit 1
+fi
