@@ -8,7 +8,7 @@ HAS_AIR := $(shell command -v air >/dev/null 2>&1 && echo yes || echo no)
 help:
 	@echo ""
 	@echo "Available make commands:"
-	@echo "  make test            - Run tests in ./tests directory (no cache)"
+	@echo "  make test [dir]      - Run tests in specified directory (default: ./tests, no cache)"
 	@echo "  make test-all        - Run all tests (no cache)"
 	@echo "  make test-cover      - Run all tests with coverage output"
 	@echo "  make clean-testcache - Clean test cache"
@@ -19,9 +19,16 @@ help:
 	@echo "  make dev             - Start development server with Air hot-reload"
 	@echo ""
 
+# Extract the test directory from command line (e.g., `make test /tmp` → test dir: /tmp)
+TEST_DIR := $(firstword $(filter-out test,$(MAKECMDGOALS)))
+ifeq ($(TEST_DIR),)
+    TEST_DIR := ./tests
+endif
+
 test:
-	@$(CHECK_GOMOD)
-	go test -v -count=1 ./tests
+	@echo "Testing directory: $(TEST_DIR)"
+	go test -v -count=1 $(TEST_DIR)
+	@: $(filter-out test,$(MAKECMDGOALS))  # 忽略额外参数
 
 test-all:
 	@$(CHECK_GOMOD)
