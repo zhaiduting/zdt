@@ -1,0 +1,226 @@
+#!/bin/bash
+# ============================================
+# Usage:       tts <input_text_or_ssml_file>
+# Description: Uses Google Cloud Text-to-Speech API to synthesize speech
+#              from a plain text or SSML file, generating an MP3 file and
+#              a time-aligned LRC (lyrics) subtitle file.
+# Author:      zhaiduting@163.com
+# Created:     2025-06-16
+# Version:     1.0
+# License:     MIT
+# Copyright:   (c) 2025 Zhai Duting
+# ============================================
+
+# 全局变量 (用于文件名和路径)
+INPUT_FILE=""
+RESPONSE_JSON=""
+OUTPUT_MP3=""
+OUTPUT_LRC=""
+
+# --- 函数定义 ---
+
+# 清理临时文件的函数
+cleanup_temp_files() {
+  echo "清理临时文件..."
+  # 只删除 RESPONSE_JSON，因为 AUDIO_BASE64 不再作为临时文件创建
+  rm -f "$RESPONSE_JSON"
+  echo "临时文件清理完毕."
+}
+
+# 检查输入文件并设置文件名
+init_files() {
+  # 如果没有提供参数，则提示用户输入文件名
+  if [ -z "$1" ]; then
+    read -p "请输入要转换的文件名: " INPUT_FILE
+  else
+    INPUT_FILE="$1"
+  fi
+
+  # 检查文件是否存在且不为空
+  if [ ! -f "$INPUT_FILE" ] || [ ! -s "$INPUT_FILE" ]; then
+    echo "错误: 文件不存在或为空: $INPUT_FILE"
+    return 1 # 返回非零值表示失败
+  fi
+
+  local base_name="${INPUT_FILE%.*}" # 移除 .ssml 扩展名，仅在函数内部使用
+  RESPONSE_JSON="${base_name}.tts.response.json"
+  OUTPUT_MP3="${base_name}.mp3"
+  OUTPUT_LRC="${base_name}.lrc"
+  return 0
+}
+
+# 获取 Google Cloud 访问令牌
+get_access_token() {
+  local token=$(gcloud auth print-access-token 2>/dev/null)
+  if [ -z "$token" ]; then
+    echo "错误: 无法获取访问令牌。请运行: gcloud auth login"
+    return 1 # 返回非零值表示失败
+  fi
+  echo "$token" # 返回令牌
+  return 0
+}
+
+# 向 Google Cloud Text-to-Speech API 发送请求
+send_tts_request() {
+  local ssml_content=$(cat "$INPUT_FILE")
+  local access_token="$1"
+
+  local request_json=$(jq -n --arg ssml_text "$ssml_content" '
+  {
+    "enableTimePointing": ["SSML_MARK"],
+    "input": {
+      "ssml": $ssml_text
+    },
+    "voice": {
+      "languageCode": "en-GB",
+      "name": "en-GB-Standard-A",
+      "ssmlGender": "FEMALE"
+    },
+    "audioConfig": {
+      "audioEncoding": "MP3"
+    }
+  }' | tr -d '\n')
+
+  echo "正在向 Google Cloud Text-to-Speech API 发送请求..."
+  curl -s -X POST \
+    -H "Authorization: Bearer $access_token" \
+    -H "x-goog-user-project: zdt-tts-try" \
+    -H "Content-Type: application/json; charset=utf-8" \
+    -d "$request_json" \
+    "https://texttospeech.googleapis.com/v1beta1/text:synthesize" \
+    -o "$RESPONSE_JSON"
+
+  # 检查 API 请求是否成功 (这里不检查 audioContent，留给 extract_and_convert_audio 处理)
+  if [ ! -f "$RESPONSE_JSON" ] || [ ! -s "$RESPONSE_JSON" ]; then
+    echo "错误: API 响应文件未生成或为空: $RESPONSE_JSON"
+    return 1
+  fi
+  return 0 # 返回成功
+}
+
+# 提取音频并转换为 MP3
+extract_and_convert_audio() {
+  echo "正在提取并转换音频到 MP3..."
+  # 直接将jq提取的base64内容通过管道传递给base64解码器，避免中间文件和可能的换行符问题
+  jq -r '.audioContent' "$RESPONSE_JSON" | base64 --decode > "$OUTPUT_MP3"
+
+  if [ $? -eq 0 ] && [ -s "$OUTPUT_MP3" ]; then
+    echo "✅ 成功生成音频文件: $OUTPUT_MP3"
+    return 0
+  else
+    echo "❌ 错误: 无法生成音频文件: $OUTPUT_MP3"
+    # 如果解码失败，检查原始响应是否包含 audioContent 为空的情况
+    if jq -e '.audioContent == null or .audioContent == ""' "$RESPONSE_JSON" > /dev/null; then
+      echo "API 响应中 audioContent 为空。"
+    else
+      echo "API 响应详情 (可能有问题):"
+      cat "$RESPONSE_JSON"
+    fi
+    return 1
+  fi
+}
+
+# 生成 LRC 文件
+generate_lrc_file() {
+  echo "正在检查是否存在时间点信息以生成 .lrc 文件..."
+
+  # 检查 timepoints 数组是否为空
+  if ! jq -e 'has("timepoints") and (.timepoints | length > 0)' "$RESPONSE_JSON" > /dev/null; then
+    echo "⚠️ 响应中未找到时间点信息。跳过 LRC 文件生成。"
+    exit 1 # 返回非零值表示跳过
+  fi
+
+  echo "正在生成 .lrc 文件..."
+
+  # 提取 timepoints 为 Bash 数组 (兼容 macOS)
+  local marks=()
+  while IFS= read -r line; do
+    marks+=("$line")
+  done < <(jq -r '.timepoints[] | "\(.markName) \(.timeSeconds)"' "$RESPONSE_JSON")
+
+  # 读取原始 SSML 内容，去除 <speak> 标签
+  local ssml_text=$(<"$INPUT_FILE")
+  ssml_text="${ssml_text//<speak>/}"
+  ssml_text="${ssml_text//<\/speak>/}"
+
+  # 拆分文本为数组，每一项是 <mark name='...'/> 前的文字
+  local text_segments=()
+  # 使用 printf '\0' 确保 read -d '' 能够正确处理末尾的空行，并终止输入
+  IFS=$'\n' read -d '' -r -a text_segments < <(
+    echo "$ssml_text" | awk '
+      BEGIN {
+        RS = "<mark name='\''[^'\'']+'\''/>"
+        ORS = ""
+        count = 0
+      }
+      {
+        gsub(/^[ \t\r\n]+|[ \t\r\n]+$/, "", $0); # 移除行首尾空白
+        if (count++) print "\n" $0; # 第二次及以后在前面加换行符
+        else print $0;              # 第一次不加
+      }
+      END { print "\n" }
+    ' && printf '\0' # 关键：用 \0 字符作为 read -d 的分隔符，处理 awk 的输出
+  )
+
+  # 输出 .lrc 文件
+  : > "$OUTPUT_LRC" # 清空文件内容
+  for i in "${!marks[@]}"; do
+    local mark="${marks[$i]}"
+    local mark_name="${mark%% *}"
+    local time="${mark#* }"
+    local lyric="${text_segments[$i]}"
+
+    # 使用 awk 进行时间格式化
+    local timestamp=$(awk -v t="$time" 'BEGIN {
+      m = int(t / 60);
+      s = int(t % 60);
+      ms = int((t - int(t)) * 100);
+      printf "[%02d:%02d.%02d]", m, s, ms
+    }')
+
+    echo "$timestamp$lyric" >> "$OUTPUT_LRC"
+  done
+
+  echo "✅ 成功生成带时间标记的文件: $OUTPUT_LRC"
+  return 0
+}
+
+# --- 主逻辑 ---
+
+main() {
+  # 步骤 1 & 2: 初始化文件路径并检查文件
+  init_files "$@" || exit 1
+
+  # 步骤 3: 获取访问令牌
+  local access_token=$(get_access_token)
+  if [ $? -ne 0 ]; then
+    # 如果获取令牌失败，直接退出，不需要清理文件（因为还没生成）
+    exit 1
+  fi
+
+  # 步骤 4 & 5: 发送 TTS 请求
+  send_tts_request "$access_token"
+  if [ $? -ne 0 ]; then
+    cleanup_temp_files # 请求失败，清理可能生成的 response_json
+    exit 1
+  fi
+
+  # 步骤 6 & 7: 提取音频并转换为 MP3
+  extract_and_convert_audio
+  if [ $? -ne 0 ]; then # 检查音频转换是否成功
+    cleanup_temp_files
+    exit 1
+  fi
+
+  # 步骤 8: 生成 LRC 文件 (条件性执行)
+  if ! generate_lrc_file; then # 如果生成 LRC 失败或跳过
+    cleanup_temp_files
+    exit 0 # 成功退出，因为音频已生成
+  fi
+
+  # 步骤 9: 所有操作成功后清理临时文件
+  cleanup_temp_files
+}
+
+# 调用主函数
+main "$@"
