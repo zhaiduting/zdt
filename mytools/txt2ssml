@@ -5,7 +5,7 @@
 #              inserting <mark name='...'/> tags for use with GCP TTS.
 # Author:      zhaiduting@163.com
 # Created:     2025-06-17
-# Version:     1.0
+# Version:     1.1
 # License:     MIT
 # Copyright:   (c) 2025 Zhai Duting
 # ============================================
@@ -32,7 +32,7 @@ echo "<speak>" > "$output_file"
 
 cat "$input_file" | awk -v i=0 -v min_spacing=20 '
 BEGIN {
-    punct = "([.。？！、,，…!?]+[[:space:]]*[”」』]*[[:space:]]*)+"
+    punct = "([.。？！、,，…!?]+[[:space:]]*[\\)）’”」』】\\]}]*[[:space:]]*)+"
 }
 {
     if ($0 ~ /^[[:space:]]*$/) {
