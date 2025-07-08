@@ -1,4 +1,5 @@
 
+alias adb_wifi='adb -s $(adb devices | grep _adb-tls-connect | cut -f1)'
 alias ll='ls -l "$@"'
 PS1='%1~ > '
 export LANG=zh_CN.UTF-8
