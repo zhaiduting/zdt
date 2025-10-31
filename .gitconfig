@@ -2,9 +2,25 @@
 	email = zhaiduting@163.com
 	name = zhaiduting
 [init]
+	; 当使用 git init 创建新仓库时，默认使用的分支名称。
+	; 现代实践推荐使用 'main' 替代传统的 'master'。
 	defaultBranch = main
+
 [push]
+	; 自动设置上游（upstream）跟踪分支。
+	; 当执行 git push 且没有指定远程分支时，如果本地分支与远程分支同名，
+	; Git 会自动设置跟踪关系（相当于执行 git push -u origin <branch>）。
 	autoSetupRemote = true
+
 [core]
+	; 自动换行符处理。
+	; input: 在提交时将 CRLF（Windows 风格）转换为 LF（Unix 风格），
+	;        但在检出文件时不进行任何转换。
+	;        这通常推荐给 macOS 或 Linux 用户，或者在跨平台协作中更倾向于 LF 的用户。
 	autocrlf = input
+
+	; 路径引用（Path Quoting）开关。
+	; false: 禁用对非 ASCII 字符（如中文）的八进制转义编码（\347\273\237...）。
+	;        设置为 false 后，git status 和其他命令将直接显示 UTF-8 中文文件名，解决乱码问题。
+	; true (默认): 会对非 ASCII 字符进行转义。
 	quotepath = false
