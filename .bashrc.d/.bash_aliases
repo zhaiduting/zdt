@@ -1,4 +1,4 @@
-# CentOS 自动加载 $HOME/.bashrc.d/ 目录下的所有非隐藏文件
+# Ubuntu 自动加载 HOME/.bash_aliases
 
 if [ -n "$ZSH_VERSION" ]; then
     PS1='%1~ > '
