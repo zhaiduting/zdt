@@ -1,0 +1,8 @@
+# 忽略所有
+/*
+!.gitignore
+
+# 追踪键盘映射工具 karabiner-elements 的配置文件
+!karabiner/
+!karabiner/**/
+!karabiner/**/*.json

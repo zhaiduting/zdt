@@ -27,3 +27,7 @@
 
 # 终端相关的配置文件夹
 !.bashrc.d
+
+# 追踪 .config 文件夹
+# 具体规则由 /.config/.gitignore 指定
+!/.config
