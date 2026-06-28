@@ -3,6 +3,11 @@
 !.gitignore
 
 # 追踪键盘映射工具 karabiner-elements 的配置文件
+# 忽略自动备份文件夹
 !karabiner/
 !karabiner/**/
 !karabiner/**/*.json
+/karabiner/automatic_backups/
+
+# 追踪鼠标工具 linearmouse 的配置文件
+!linearmouse/
