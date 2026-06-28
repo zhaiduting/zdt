@@ -1,6 +1,25 @@
 {
   "$schema" : "https:\/\/schema.linearmouse.app\/0.11.2",
   "schemes" : [
-
+    {
+      "if" : {
+        "device" : {
+          "category" : "mouse",
+          "productID" : "0xb031",
+          "productName" : "LIFT",
+          "serialNumber" : "E6322C76",
+          "vendorID" : "0x46d"
+        }
+      },
+      "scrolling" : {
+        "modifiers" : {
+          "horizontal" : {
+            "shift" : {
+              "type" : "ignore"
+            }
+          }
+        }
+      }
+    }
   ]
 }
